@@ -8,21 +8,15 @@
 */
 #include <IRLibSendBase.h>    //We need the base code
 #include <IRLib_HashRaw.h>    //Only use raw sender
-//#include <dht.h>
-
-//#define dht_apin A0 // Analog Pin sensor is connected to
-
-//dht DHT;
-
 IRsendRaw mySender;
 
-//int On = 7;
-//int Off = 8;
 int pir = 9;
+int i;
+const int dt = 150;
+int PIR;
+
 
 void setup() {
-//  pinMode(On, INPUT);
-//  pinMode(Off, INPUT);
   pinMode(pir,INPUT);
 
   Serial.begin(9600);
@@ -45,43 +39,34 @@ uint16_t rawDataOn[RAW_DATA_LEN] = {
 4852, 2298, 202, 1942, 202, 870, 200, 870, 202, 868, 202, 1942, 202, 870, 202, 870, 202, 870, 202, 870, 202, 1942, 202, 870, 202, 1942, 202, 1942, 202, 868, 202, 1942, 202, 1942, 202, 1912, 232, 1942, 202, 1942, 202, 868, 202, 1942, 202, 870, 202, 870, 202, 868, 202, 868, 204, 868, 202, 870, 202, 1942, 202, 868, 204, 868, 202, 1942, 202, 870, 202, 870, 200, 870, 202, 1942, 202, 868, 202, 870, 202, 870, 202, 870, 202, 870, 202, 870, 202, 870, 202, 870, 202, 868, 202, 868, 204, 868, 202, 870, 202, 870, 202, 870, 202, 1942, 202, 1942, 202, 1942, 202, 868, 202, 868, 204, 1942, 202, 870, 202, 29468, 4880, 2266, 256, 1888, 230, 844, 202, 868, 202, 870, 256, 1888, 230, 842, 228, 842, 230, 842, 256, 814, 232, 1914, 254, 816, 230, 1916, 256, 1888, 256, 814, 256, 1890, 254, 1888, 256, 1888, 256, 1888, 256, 1888, 256, 816, 230, 1912, 258, 814, 256, 816, 256, 816, 282, 790, 280, 790, 282, 790, 282, 1862, 258, 814, 280, 790, 282, 1862, 280, 792, 280, 790, 282, 788, 282, 790, 282, 790, 282, 790, 282, 790, 282, 788, 282, 790, 282, 1862, 282, 1862, 282, 790, 282, 788, 282, 1862, 282, 1864, 280, 1862, 282, 790, 280, 790, 282, 790, 282, 790, 282, 788, 284, 790, 282, 760, 310, 790, 282, 788, 282, 1862, 282, 788, 282, 790, 282, 788, 282, 788, 282, 1862, 284, 788, 282, 788, 284, 788, 282, 790, 282, 788, 284, 788, 282, 790, 282, 788, 284, 758, 312, 788, 284, 788, 282, 788, 284, 788, 282, 788, 284, 788, 282, 788, 284, 788, 284, 758, 314, 786, 284, 788, 284, 1860, 282, 790, 282, 790, 282, 1862, 282, 758, 312, 762, 310, 788, 284, 788, 282, 758, 314, 758, 314, 1862, 282, 760, 312, 1860, 284, 760, 310, 788, 282, 760, 312, 788, 284, 760, 312, 788, 282, 790, 282, 788, 284, 788, 282, 790, 282, 788, 282, 758, 314, 788, 282, 758, 314, 1862, 282, 758, 312, 788, 284, 758, 312, 758, 314, 788, 282, 758, 314, 758, 312, 788, 284, 788, 284, 758, 312, 760, 312, 762, 310, 790, 284, 788, 282, 758, 314, 758, 312, 788, 282, 760, 312, 760, 312, 760, 312, 788, 282, 758, 314, 788, 284, 788, 284, 758, 312, 788, 282, 790, 282, 1832, 310, 758, 316, 788, 284, 1862, 282, 1862, 282, 1832, 310, 788, 284
 };
 
-
-
 /*
    Cut-and-paste into the area above.
 */
 
 void loop() {
-
-  /*DHT.read11(dht_apin);
-    int temp = DHT.temperature;
-    Serial.print("temperature = ");
-    Serial.print(temp);
-    Serial.println(" C");*/
-
-  //int ON = digitalRead(On);
- // int OFF = digitalRead(Off);
-  int PIR = digitalRead(pir);
-//  Serial.println(PIR);
-  if (PIR == HIGH) {
+  delay (2000);
+  PIR = digitalRead(pir);
+  Serial.println(PIR);
+  if (PIR == 1) {
     mySender.send(rawDataOn, RAW_DATA_LEN, 36); //Pass the buffer,length, optionally frequency
- //   Serial.println(F("AC Switched On"));
-    delay (3000);
-//    mySender.send(rawDataOn, RAW_DATA_LEN, 36);
-    while (PIR == 1){
+    Serial.println(F("AC Switched On"));
+    delay(3000);
+    mySender.send(rawDataOn, RAW_DATA_LEN, 36);
+    for (i=0;i<dt;i++){
+      delay(2000);
       PIR = digitalRead(pir);
-      Serial.println(PIR);
+      if (PIR == 1){
+        i=0;
+      }
     }
   }
-  delay (3000);
-  PIR = digitalRead(pir);
-  else if (PIR == LOW) {
+  else if (PIR == 0){
     mySender.send(rawDataOff, RAW_DATA_LEN, 36); //Pass the buffer,length, optionally frequency
     Serial.println(F("AC Switched Off"));
+    delay(3000);
+    mySender.send(rawDataOff, RAW_DATA_LEN, 36);
         while (PIR == 0){
       PIR = digitalRead(pir);
-      Serial.println(PIR);
     }
   }
-  //delay(5000);
 }
